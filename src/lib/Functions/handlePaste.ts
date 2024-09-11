@@ -37,11 +37,33 @@ export function handlePaste(event: ClipboardEvent, state: State): State {
         pastedRows.push(row);
       }
     } else {
-      pastedRows = event.clipboardData
-        .getData("text/plain")
-        .replace(/(\r\n)$/, '')
-        .split("\n")
-        .map((line: string) => line.split("\t").map((t) => ({ type: "text", text: t, value: parseLocaleNumber(t) })));
+      const cleanValue = event.clipboardData
+                            .getData("text/plain")
+                            .replace(/(\r\n)$/, '');
+
+      const results = [];
+      let inQuotes = false;
+      let currentSegment = '';
+      for (let i = 0; i < cleanValue.length; i++) {
+        const char = cleanValue[i];
+
+        if (char === '"') {
+          inQuotes = !inQuotes;
+          currentSegment += char;
+        } else if (char === '\n' && !inQuotes) {
+          results.push(currentSegment.trim());
+          currentSegment = '';
+        } else {
+          currentSegment += char;
+        }
+      }
+
+      if (currentSegment) {
+        results.push(currentSegment.trim());
+      }
+
+      pastedRows = results.map((line: string) => line.split("\t").map((t) => ({ type: "text", text: t, value: parseLocaleNumber(t) })));
+
     }
     event.preventDefault();
     return { ...pasteData(state, pastedRows) };
