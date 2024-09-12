@@ -49,12 +49,12 @@ export function handlePaste(event: ClipboardEvent, state: State): State {
 
         if (char === '"') {
           inQuotes = !inQuotes;
-          currentSegment += char;
+          // currentSegment += char;
         } else if (char === '\n' && !inQuotes) {
           results.push(currentSegment.trim());
           currentSegment = '';
         } else {
-          currentSegment += char;
+          currentSegment += char === '\n' ? ' ' : char;
         }
       }
 
